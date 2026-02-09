@@ -1,0 +1,44 @@
+# Python artifacts
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+.env
+
+# Large binaries and local tools
+orca_bin/
+*.exe
+*.dll
+
+# Temporary/Calculation data
+data/orca_work/
+data/production/
+data/benchmarks/
+data/validation/
+*.out
+*.inp
+*.gbw
+*.tmp
+*.int
+*.property
+*.opt
+*.coords
+*.hess
+*.pc
+*.vcor
+*.vwp
+*.wfn
+
+# Artifacts/System
+.gemini/
+brain/
+implementation_plan.md
+task.md
+walkthrough.md
+
+# OS files
+.DS_Store
+Thumbs.db
