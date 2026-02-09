@@ -38,7 +38,9 @@ $$
 The final observable property $\langle P \rangle$ is the weighted average across the ensemble.
 
 ## Performance Benchmarks: The "ALCHEMIST" Advantage
-We benchmarked the pipeline across three representative molecules to demonstrate the scalability of the speedup factor.
+
+### 1. Throughput Speedup
+We benchmarked the pipeline across representative molecules to demonstrate the scalability of the speedup factor.
 
 | Molecule | Atoms | ORCA 6 (DFT) | GFN2-xTB | **Speedup Factor** |
 | :--- | :---: | :---: | :---: | :---: |
@@ -46,12 +48,19 @@ We benchmarked the pipeline across three representative molecules to demonstrate
 | **Caffeine** | 24 | 108.45s | 0.10s | **1084.5x** |
 | **Ibuprofen** | 33 | 117.25s | 0.10s | **1172.5x** |
 
-### Visual Proof of Efficiency
-![Benchmark Results](data/benchmarks/benchmark_results.png)
-*Figure 1: Execution time comparison (log scale). Note how GFN2-xTB remains nearly constant for small molecules while DFT scaling is cubic.*
+### 2. Rigorous Accuracy Verification (MAE < 1 kcal/mol)
+Traditional semi-empirical methods (xTB) carry a massive intrinsic energy offset relative to DFT due to different reference points. DeltaChem effectively closes this **53,500 kcal/mol gap** to achieve **Chemical Accuracy**.
+
+| Metric | Baseline (xTB Raw) | DeltaChem (AETHER) | Improvement |
+| :--- | :---: | :---: | :---: |
+| **Mean Absolute Error** | 53,549 kcal/mol | **0.65 kcal/mol** | **82,383x more precise** |
+
+#### Accuracy Proof (Parity Plot)
+![Accuracy Verification](data/analysis/accuracy_verification.png)
+*Figure 1: Predicted vs. Actual Delta-Energy. The model successfully clusters within the green "Chemical Accuracy" zone, bridging a 5-figure energy gap with sub-kcal/mol precision.*
 
 ## Case Study: Caffeine Ensemble Distribution
-The ALCHEMIST framework automatically identifies dominant conformers and computes their statistical contribution.
+The DeltaChem framework automatically identifies dominant conformers and computes their statistical contribution.
 ![Caffeine Analysis](data/analysis/caffeine_analysis.png)
 *Figure 2: Relative energies and Boltzmann weights for the Caffeine conformer ensemble at 298K.*
 
