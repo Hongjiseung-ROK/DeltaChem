@@ -81,19 +81,32 @@ class AccuracyStudy:
         df = pd.DataFrame(self.results)
         df.to_csv("data/accuracy_study/accuracy_report.csv", index=False)
         
-        avg_mae = df["MAE (kcal/mol)"].mean()
-        std_mae = df["MAE (kcal/mol)"].std()
+        errors = df["MAE (kcal/mol)"].values
+        avg_mae = np.mean(errors)
+        rmse = np.sqrt(np.mean(errors**2))
+        max_error = np.max(errors)
+        std_mae = np.std(errors)
         
-        print("\n" + "="*40)
-        print("FINAL ACCURACY VERIFICATION REPORT")
-        print("="*40)
+        # Outlier Detection (Error > Mean + 2*Std)
+        outlier_threshold = avg_mae + 2 * std_mae
+        outliers = df[df["MAE (kcal/mol)"] > outlier_threshold]
+
+        print("\n" + "="*45)
+        print("ENTERPRISE ACCURACY VERIFICATION REPORT")
+        print("="*45)
         print(df[["Molecule", "MAE (kcal/mol)"]].to_string(index=False))
-        print("-"*40)
-        print(f"BASELINE MAE (xTB vs DFT): {avg_mae:.2f} ± {std_mae:.2f} kcal/mol")
-        print("="*40)
-        print("Interpretation: A Delta-Learning model must correct this ~50-100 kcal/mol gap")
-        print("to reach Chemical Accuracy (< 1.0 kcal/mol).")
+        print("-" * 45)
+        print(f"MAE:       {avg_mae:.2f} kcal/mol")
+        print(f"RMSE:      {rmse:.2f} kcal/mol")
+        print(f"MAX ERROR: {max_error:.2f} kcal/mol (Critical Outlier Check)")
         
+        if not outliers.empty:
+            print(f"\n[WARNING] {len(outliers)} OUTLIERS DETECTED (> {outlier_threshold:.2f}):")
+            print(outliers[["Molecule", "MAE (kcal/mol)"]].to_string(index=False))
+        else:
+            print("\n[INFO] No statistical outliers detected in this set.")
+            
+        print("="*45)
         return avg_mae
 
 if __name__ == "__main__":

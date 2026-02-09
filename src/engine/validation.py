@@ -8,12 +8,12 @@ class ValidationEngine:
         self.parser = ResultParser()
         self.work_dir = work_dir
 
-    def run_full_validation(self, xyz_coords, name, xtb_energy_ev):
+    def run_full_validation(self, xyz_coords, name, xtb_energy_ev, solvent=None):
         """Runs ORCA for a molecule and compares it with xTB energy."""
-        print(f"--- Quantum Validation: {name} ---")
+        print(f"--- Quantum Validation: {name} (Solvent: {solvent or 'Gas'}) ---")
         
         # 1. ORCA Calculation
-        inp_path = self.quantum.write_orca_input(xyz_coords, name)
+        inp_path = self.quantum.write_orca_input(xyz_coords, name, solvent=solvent)
         out_path = self.quantum.run_orca(inp_path)
         
         if out_path and os.path.exists(out_path):
@@ -24,21 +24,20 @@ class ValidationEngine:
                 e_dft = orca_results["energy_ev"]
                 delta_e = e_dft - xtb_energy_ev
                 
+                # Report error metrics in kcal/mol for better visibility
+                error_kcal = abs(delta_e) * 23.0605
+                
                 print(f"[RESULTS] {name}")
                 print(f"Energy (xTB): {xtb_energy_ev:.4f} eV")
                 print(f"Energy (DFT): {e_dft:.4f} eV")
-                print(f"Delta-Energy: {delta_e:.4f} eV")
-                
-                homo_lumo = None
-                if orca_results.get("homo") is not None and orca_results.get("lumo") is not None:
-                    homo_lumo = orca_results["homo"] - orca_results["lumo"]
+                print(f"Delta-Energy: {delta_e:.4f} eV ({error_kcal:.2f} kcal/mol)")
                 
                 return {
                     "name": name,
                     "e_xtb": xtb_energy_ev,
                     "e_dft": e_dft,
                     "delta_e": delta_e,
-                    "homo_lumo": homo_lumo
+                    "error_kcal": error_kcal
                 }
         return None
 

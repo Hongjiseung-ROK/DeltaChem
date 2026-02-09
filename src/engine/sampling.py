@@ -5,14 +5,13 @@ from rdkit import Chem
 from rdkit.Chem import AllChem, rdMolAlign
 from tqdm import tqdm
 
+from src.utils.config import Config
+
 class SamplingEngine:
-    def __init__(self, output_dir="data/raw", xtb_path=None):
-        self.output_dir = output_dir
-        os.makedirs(output_dir, exist_ok=True)
-        # Use provided path or default local path found in Phase 0
-        self.xtb_path = xtb_path or r"c:\workspace\222_cc_project\orca_bin\xtb-6.7.1pre\xtb.exe"
-        if not os.path.exists(self.xtb_path):
-            raise FileNotFoundError(f"xTB binary not found at {self.xtb_path}")
+    def __init__(self, output_dir=None, xtb_path=None):
+        self.output_dir = output_dir or Config.get_work_dir("sampling")
+        self.xtb_path = xtb_path or Config.XTB_PATH
+        os.makedirs(self.output_dir, exist_ok=True)
 
     def generate_conformers(self, smiles, name, num_confs=50, rmsd_threshold=0.5):
         """Generates conformers using ETKDG and applies a diversity filter."""
@@ -44,14 +43,19 @@ class SamplingEngine:
         print(f"[{name}] Diversity filter: {len(conf_ids)} -> {len(unique_conf_ids)} unique conformers.")
         return mol, unique_conf_ids
 
-    def optimize_conformers(self, mol, conf_ids, name):
-        """Optimizes selected conformers using GFN2-xTB."""
+    def optimize_conformers(self, mol, conf_ids, name, solvent=None):
+        """Optimizes selected conformers using GFN2-xTB with optional solvation."""
         optimized_mol = Chem.Mol(mol)
         optimized_mol.RemoveAllConformers()
         
         work_dir = os.path.join(self.output_dir, f"{name}_xtb")
         os.makedirs(work_dir, exist_ok=True)
         
+        # Build solvation command
+        solv_cmd = []
+        if solvent:
+            solv_cmd = ["--gbsa", solvent]
+            
         final_confs = []
         for i, conf_id in enumerate(tqdm(conf_ids, desc=f"Optimizing {name} with xTB")):
             conf_file = os.path.join(work_dir, f"conf_{i}.sdf")
@@ -62,7 +66,7 @@ class SamplingEngine:
             # Run xTB optimization
             try:
                 # --opt for geometry optimization
-                cmd = [self.xtb_path, conf_file, "--opt", "tight"]
+                cmd = [self.xtb_path, conf_file, "--opt", "tight"] + solv_cmd
                 subprocess.run(cmd, cwd=work_dir, capture_output=True, text=True, check=True)
                 
                 # Load optimized geometry (xtbopt.sdf)

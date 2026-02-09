@@ -10,6 +10,7 @@ venv/
 
 # Large binaries and local tools
 orca_bin/
+orca/
 *.exe
 *.dll
 

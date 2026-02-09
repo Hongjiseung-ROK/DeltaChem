@@ -1,17 +1,24 @@
 import os
 import subprocess
+from src.utils.config import Config
 
 class QuantumEngine:
-    def __init__(self, orca_path=None, work_dir="data/orca_work"):
-        self.orca_path = orca_path or r"c:\workspace\222_cc_project\orca_bin\orca.exe"
-        self.work_dir = work_dir
-        os.makedirs(work_dir, exist_ok=True)
+    def __init__(self, orca_path=None, work_dir=None):
+        self.orca_path = orca_path or Config.ORCA_PATH
+        self.work_dir = work_dir or Config.get_work_dir("orca_work")
+        os.makedirs(self.work_dir, exist_ok=True)
 
-    def write_orca_input(self, xyz_coords, name, charge=0, multiplicity=1):
-        """Generates an ORCA input file for single-point energy."""
+    def write_orca_input(self, xyz_coords, name, charge=0, multiplicity=1, solvent=None):
+        """Generates an ORCA input file for single-point energy with optional solvation."""
         input_path = os.path.join(self.work_dir, f"{name}.inp")
+        
+        # Determine Solvation Method (CPCM for water/common solvents)
+        solv_str = ""
+        if solvent:
+            solv_str = f" CPCM({solvent})"
+            
         with open(input_path, "w") as f:
-            f.write(f"! B3LYP 6-31G* TightSCF SP\n")
+            f.write(f"! B3LYP 6-31G* TightSCF SP{solv_str}\n")
             # f.write(f"%pal nprocs 4 end\n") # Commented out due to mpiexec issues
             f.write(f"* xyz {charge} {multiplicity}\n")
             f.write(xyz_coords)
