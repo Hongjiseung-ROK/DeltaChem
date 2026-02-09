@@ -21,12 +21,16 @@ graph LR
 
 ### 1. Delta-Learning Theory
 Instead of predicting absolute energies, the model learns the residual $\Delta E$ between a low-level (LL) and high-level (HL) method:
-$$ \Delta E = E_{HL} (\text{DFT}) - E_{LL} (\text{xTB}) $$
+$$
+\Delta E = E_{HL} (\text{DFT}) - E_{LL} (\text{xTB})
+$$
 This strategy effectively cancels out systematic errors and focuses the neural network on the complex quantum mechanical interactions.
 
 ### 2. Statistical Mechanics (Boltzmann Averaging)
 In real-world systems, molecules exist as a distribution of conformers. The probability $w_i$ of conformer $i$ is determined by its relative energy:
-$$ w_i = \frac{e^{-\Delta E_i / k_B T}}{\sum_{j=1}^n e^{-\Delta E_j / k_B T}} $$
+$$
+w_i = \frac{e^{-\Delta E_i / k_B T}}{\sum_{j=1}^n e^{-\Delta E_j / k_B T}}
+$$
 The final observable property $\langle P \rangle$ is the weighted average across the ensemble.
 
 ## Performance Benchmarks: The "ALCHEMIST" Advantage
